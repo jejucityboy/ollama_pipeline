@@ -1,0 +1,29 @@
+# 최소한의 라이브러리로 구성
+
+# 기본 API 서버
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# AI/ML 라이브러리 (핵심만)
+torch>=2.0.0
+transformers>=4.35.0
+datasets>=2.14.0
+peft>=0.6.0
+accelerate>=0.24.0
+
+# 데이터 처리
+pandas>=2.0.0
+numpy>=1.24.0
+
+# GGUF 변환용
+gguf>=0.6.0
+protobuf>=4.21.0
+
+# 유틸리티
+python-decouple==3.8
+pandas>=2.0.0
+numpy>=1.24.0
+
+# 유틸리티
+python-decouple==3.8
