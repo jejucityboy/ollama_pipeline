@@ -14,7 +14,7 @@ from transformers import (
 from peft import LoraConfig, get_peft_model, TaskType, PeftModel
 from datasets import Dataset
 import logging
-from .utils import update_job_status, save_job_info
+from app.utils import update_job_status, save_job_info
 
 logger = logging.getLogger(__name__)
 

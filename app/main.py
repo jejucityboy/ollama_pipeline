@@ -3,22 +3,20 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks, F
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-import torch
 from pathlib import Path
-import asyncio
 from datetime import datetime
 import logging
 
-from .models import (
-    TrainingRequest, TrainingResponse, TrainingJob,
-    JobListResponse, HealthCheck, ErrorResponse, JobStatus
+from app.finefune.models import (
+    TrainingResponse, TrainingJob,
+    JobListResponse, HealthCheck, JobStatus
 )
 from .utils import (
     generate_job_id, validate_csv_file, check_system_resources,
     estimate_training_time, save_job_info, get_all_jobs,
-    load_job_info, get_model_info
+    load_job_info
 )
-from .finetune import start_finetune_job
+from app.finefune.finetune import start_finetune_job
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
