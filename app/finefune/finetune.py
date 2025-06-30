@@ -14,7 +14,7 @@ from transformers import (
 from peft import LoraConfig, get_peft_model, TaskType, PeftModel
 from datasets import Dataset
 import logging
-from app.utils import update_job_status, save_job_info
+from app.utils import update_job_status, save_job_info, get_job_data_file, get_job_log_file, get_job_model_dir
 
 logger = logging.getLogger(__name__)
 
@@ -28,13 +28,11 @@ class LucasAIFineTuner:
         self.model_name = model_name
         self.config = config or self._default_config()
 
-        # 디렉토리 설정
-        self.output_dir = Path("models") / job_id
-        self.log_file = Path("logs") / f"{job_id}.log"
+        # 디렉토리 설정 (새로운 경로 구조 사용)
+        self.output_dir = get_job_model_dir(job_id)
+        self.log_file = get_job_log_file(job_id)
 
-        # 디렉토리 생성
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.log_file.parent.mkdir(parents=True, exist_ok=True)
+        # 디렉토리는 get_job_model_dir에서 이미 생성됨
 
         # 디바이스 설정
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -83,8 +81,9 @@ class LucasAIFineTuner:
         self.log_and_update("📊 데이터 로드 중...", progress=10)
 
         try:
-            # CSV 읽기
-            df = pd.read_csv(self.csv_file)
+            # CSV 읽기 (새로운 경로에서)
+            data_file = get_job_data_file(self.job_id)
+            df = pd.read_csv(data_file)
 
             # 데이터 정리
             df = df.dropna(subset=['instruction', 'output'])

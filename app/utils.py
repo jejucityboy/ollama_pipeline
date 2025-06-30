@@ -7,6 +7,7 @@ from typing import Tuple, Dict, Any
 import logging
 from datetime import datetime
 import json
+from .path_manager import path_manager
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -94,17 +95,14 @@ def estimate_training_time(num_samples: int, epochs: int = 2) -> str:
 
 def save_job_info(job_data: Dict[str, Any], job_id: str) -> None:
     """작업 정보를 파일에 저장"""
-    jobs_dir = Path("jobs")
-    jobs_dir.mkdir(exist_ok=True)
-
-    job_file = jobs_dir / f"{job_id}.json"
+    job_file = path_manager.get_job_info_file(job_id)
     with open(job_file, 'w', encoding='utf-8') as f:
         json.dump(job_data, f, indent=2, ensure_ascii=False, default=str)
 
 
 def load_job_info(job_id: str) -> Dict[str, Any]:
     """작업 정보 로드"""
-    job_file = Path("jobs") / f"{job_id}.json"
+    job_file = path_manager.get_job_info_file(job_id)
 
     if not job_file.exists():
         return None
@@ -115,18 +113,16 @@ def load_job_info(job_id: str) -> Dict[str, Any]:
 
 def get_all_jobs() -> list:
     """모든 작업 정보 조회"""
-    jobs_dir = Path("jobs")
-    if not jobs_dir.exists():
-        return []
-
+    job_ids = path_manager.list_all_jobs()
+    
     jobs = []
-    for job_file in jobs_dir.glob("*.json"):
+    for job_id in job_ids:
         try:
-            with open(job_file, 'r', encoding='utf-8') as f:
-                job_data = json.load(f)
+            job_data = load_job_info(job_id)
+            if job_data:
                 jobs.append(job_data)
         except Exception as e:
-            logger.error(f"Failed to load job file {job_file}: {e}")
+            logger.error(f"Failed to load job {job_id}: {e}")
 
     # 생성 시간순으로 정렬
     jobs.sort(key=lambda x: x.get('created_at', ''), reverse=True)
@@ -147,6 +143,37 @@ def update_job_status(job_id: str, status: str, **kwargs) -> None:
         job_data[key] = value
 
     save_job_info(job_data, job_id)
+
+
+def get_job_data_file(job_id: str) -> Path:
+    """작업 데이터 파일 경로 반환"""
+    return path_manager.get_data_file(job_id)
+
+
+def get_job_log_file(job_id: str) -> Path:
+    """작업 로그 파일 경로 반환"""
+    return path_manager.get_log_file(job_id)
+
+
+def get_job_model_dir(job_id: str) -> Path:
+    """작업 모델 디렉토리 경로 반환"""
+    return path_manager.get_model_dir(job_id)
+
+
+def get_job_modelfile(job_id: str) -> Path:
+    """작업 Modelfile 경로 반환"""
+    return path_manager.get_modelfile(job_id)
+
+
+def migrate_legacy_structure():
+    """기존 파일 구조를 새로운 workspace 구조로 마이그레이션"""
+    # 기존 jobs 디렉토리에서 모든 job_id 찾기
+    legacy_jobs_dir = Path("jobs")
+    if legacy_jobs_dir.exists():
+        for job_file in legacy_jobs_dir.glob("*.json"):
+            job_id = job_file.stem
+            logger.info(f"Migrating job {job_id} to new structure...")
+            path_manager.migrate_legacy_files(job_id)
 
 
 def cleanup_old_files(days: int = 7) -> None:

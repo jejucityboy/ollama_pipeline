@@ -20,8 +20,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # 애플리케이션 코드 복사
 COPY app/ ./app/
 
-# 필요한 디렉토리 생성
-RUN mkdir -p uploads models logs jobs
+# 새로운 workspace 구조 디렉토리 생성
+RUN mkdir -p workspace
 
 # 포트 노출
 EXPOSE 8000
