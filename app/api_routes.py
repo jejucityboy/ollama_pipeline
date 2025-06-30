@@ -45,8 +45,11 @@ async def start_training(
         background_tasks: BackgroundTasks,
         model_name: str = Form(..., description="모델 이름"),
         csv_file: UploadFile = File(..., description="CSV 파일"),
+        base_model: str = Form("CarrotAI/Llama-3.2-Rabbit-Ko-1B-Instruct", description="베이스 모델"),
         epochs: int = Form(2, description="훈련 에포크"),
-        learning_rate: float = Form(2e-4, description="학습률")
+        learning_rate: float = Form(2e-4, description="학습률"),
+        batch_size: int = Form(2, description="배치 크기"),
+        max_length: int = Form(512, description="최대 시퀀스 길이")
 ):
     """CSV 파일 업로드 및 파인튜닝 시작"""
 
@@ -69,13 +72,13 @@ async def start_training(
     with open(upload_path, "wb") as f:
         f.write(file_content)
 
-    # 훈련 설정
+    # 훈련 설정 (사용자 입력값 사용)
     config = {
-        "base_model": "CarrotAI/Llama-3.2-Rabbit-Ko-1B-Instruct",
+        "base_model": base_model,
         "epochs": epochs,
         "learning_rate": learning_rate,
-        "batch_size": 2,
-        "max_length": 512,
+        "batch_size": batch_size,
+        "max_length": max_length,
         "lora_r": 8,
         "lora_alpha": 16,
         "lora_dropout": 0.1
